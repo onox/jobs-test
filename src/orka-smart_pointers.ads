@@ -19,8 +19,6 @@
 
 private with Ada.Finalization;
 
-private with Orka.Atomics;
-
 generic
    type Object_Type is private;
    --  Objects are freed by providing an access to a procedure in Set. This
@@ -62,8 +60,16 @@ package Orka.Smart_Pointers is
 
 private
 
+   protected type Reference_Counter is
+      procedure Increment;
+      procedure Decrement (Result : out Natural);
+      function Count return Natural;
+   private
+      References : Natural := 1;
+   end Reference_Counter;
+
    type Data_Record is record
-      References : Atomics.Unsigned_32 := 0;
+      References : Reference_Counter;
       Object     : aliased Object_Type;
       Free       : Free_Ptr;
    end record;
