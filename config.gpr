@@ -1,0 +1,58 @@
+abstract project Config is
+
+   type OS_Type is ("windows", "linux");
+   OS : OS_Type := external ("OS");
+
+   type Mode_Type is ("debug", "development", "release");
+   Mode : Mode_Type := external ("Mode", "development");
+
+   Compiler_Flags := external_as_list ("Compiler_Flags", " ");
+
+   Compiler_Switches := (
+      "-fstack-check",  --  Stack overflow checking
+      "-gnateE",        --  Extra information in exceptions
+      "-gnatf",         --  Full errors
+      "-gnatVa",        --  All validity checks
+      "-gnatwa",        --  All optional warnings
+      "-gnatwFl.l.n.s",
+      "-gnaty",         --  Default style checks
+      "-gnatyAdOSux-msbc",
+      "-gnat2012",      --  Use Ada 2012
+      "-Wall"           --  All GCC warnings
+   ) & Compiler_Flags;
+
+   Dev_Switches := (
+      "-gnato13",       --  Numeric overflow checking
+      "-gnata"          --  Enable assertions
+   );
+
+   package Ide is
+      for Vcs_Kind use "Git";
+   end Ide;
+
+   package Compiler is
+      case Mode is
+         when "debug" =>
+            for Switches ("ada") use Compiler_Switches & Dev_Switches & ("-g");
+         when "development" =>
+            for Switches ("ada") use Compiler_Switches & Dev_Switches &
+              ("-gnatn2", "-fomit-frame-pointer");
+         when "release" =>
+            for Switches ("ada") use Compiler_Switches &
+              ("-gnatn2", "-fomit-frame-pointer", "-gnato0");
+      end case;
+
+      for Local_Configuration_Pragmas use "gnat.adc";
+   end Compiler;
+
+   package Binder is
+      case Mode is
+         when "debug" | "development" =>
+            --  Store tracebacks in exception occurrences
+            for Switches ("ada") use ("-E");
+         when others =>
+            null;
+      end case;
+   end Binder;
+
+end Config;

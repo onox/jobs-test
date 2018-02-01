@@ -1,0 +1,24 @@
+with "config";
+
+project Orka is
+
+   for Languages use ("ada");
+
+   Orka_Sources := ("src", "examples");
+
+   case Config.OS is
+      when "windows" => Orka_Sources := Orka_Sources & "src/windows";
+      when "linux"   => Orka_Sources := Orka_Sources & "src/linux";
+   end case;
+
+   for Source_Dirs use Orka_Sources;
+   for Object_Dir use "obj";
+   for Exec_Dir use "bin";
+
+   package Ide renames Config.Ide;
+   package Compiler renames Config.Compiler;
+   package Binder renames Config.Binder;
+
+   for Main use ("orka_test-test_9_jobs");
+
+end Orka;
